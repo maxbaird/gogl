@@ -45,7 +45,10 @@ func CreateShader(shaderSource string, shaderType uint32) ShaderID {
 }
 
 //CreateProgram ...
-func CreateProgram(vert ShaderID, frag ShaderID) ProgramID {
+func CreateProgram(vertStr string, fragStr string) ProgramID {
+	vert := CreateShader(vertStr, gl.VERTEX_SHADER)
+	frag := CreateShader(fragStr, gl.FRAGMENT_SHADER)
+
 	shaderProgram := gl.CreateProgram()
 	gl.AttachShader(shaderProgram, uint32(vert))
 	gl.AttachShader(shaderProgram, uint32(frag))
@@ -65,4 +68,40 @@ func CreateProgram(vert ShaderID, frag ShaderID) ProgramID {
 	gl.DeleteShader(uint32(frag))
 
 	return ProgramID(shaderProgram)
+}
+
+//GenBindBuffer ...
+func GenBindBuffer(target uint32) VBOID {
+	var VBO uint32
+	gl.GenBuffers(1, &VBO)
+	gl.BindBuffer(target, VBO)
+	return VBOID(VBO)
+}
+
+//GenBindVertexArray ...
+func GenBindVertexArray() VAOID {
+	var VAO uint32
+	gl.GenVertexArrays(1, &VAO)
+	gl.BindVertexArray(VAO)
+	return VAOID(VAO)
+}
+
+//BindVertexArray ...
+func BindVertexArray(vaoID VAOID) {
+	gl.BindVertexArray(uint32(vaoID))
+}
+
+//BufferDataFloat ...
+func BufferDataFloat(target uint32, data []float32, usage uint32) {
+	gl.BufferData(target, len(data)*4, gl.Ptr(data), usage)
+}
+
+//UnbindVertexArray ...
+func UnbindVertexArray() {
+	gl.BindVertexArray(0)
+}
+
+//UseProgram ...
+func UseProgram(programID ProgramID) {
+	gl.UseProgram(uint32(programID))
 }
