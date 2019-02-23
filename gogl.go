@@ -14,11 +14,13 @@ func GetVersion() string {
 func MakeShader(shaderSource string, shaderType uint32) uint32 {
 	shaderID := gl.CreateShader(shaderType)
 	shaderSource = shaderSource + "\x00"
-	csource, free = gl.Strs(shaderSource)
+	csource, free := gl.Strs(shaderSource)
 	gl.ShaderSource(shaderID, 1, csource, nil)
 	free()
 
 	gl.CompileShader(shaderID)
+
+	var status int32
 	gl.GetShaderiv(shaderID, gl.COMPILE_STATUS, &status)
 
 	if status == gl.FALSE {
