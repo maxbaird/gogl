@@ -2,6 +2,7 @@ package gogl
 
 import (
 	"github.com/go-gl/gl/v3.3-core/gl"
+	"io/ioutil"
 	"strings"
 )
 
@@ -19,6 +20,18 @@ type (
 //GetVersion ...
 func GetVersion() string {
 	return gl.GoStr(gl.GetString(gl.VERSION))
+}
+
+//LoadShader ...
+func LoadShader(path string, shaderType uint32) ShaderID {
+	shaderFile, err := ioutil.ReadFile(path)
+
+	if err != nil {
+		panic(err)
+	}
+
+	shaderFileStr := string(shaderFile)
+	return CreateShader(shaderFileStr, shaderType)
 }
 
 //CreateShader ...
@@ -45,9 +58,9 @@ func CreateShader(shaderSource string, shaderType uint32) ShaderID {
 }
 
 //CreateProgram ...
-func CreateProgram(vertStr string, fragStr string) ProgramID {
-	vert := CreateShader(vertStr, gl.VERTEX_SHADER)
-	frag := CreateShader(fragStr, gl.FRAGMENT_SHADER)
+func CreateProgram(vertPath string, fragPath string) ProgramID {
+	vert := LoadShader(vertPath, gl.VERTEX_SHADER)
+	frag := LoadShader(fragPath, gl.FRAGMENT_SHADER)
 
 	shaderProgram := gl.CreateProgram()
 	gl.AttachShader(shaderProgram, uint32(vert))
