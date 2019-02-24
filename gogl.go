@@ -1,9 +1,13 @@
 package gogl
 
 import (
+	"errors"
+	"fmt"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"io/ioutil"
+	"os"
 	"strings"
+	"time"
 )
 
 type (
@@ -17,13 +21,37 @@ type (
 	VBOID uint32
 )
 
+type shaderInfo struct {
+	path     string
+	modified time.Time
+}
+
 //GetVersion ...
 func GetVersion() string {
 	return gl.GoStr(gl.GetString(gl.VERSION))
 }
 
+var loadedShaders []shaderInfo
+
+//CheckShadersForChanges ...
+func CheckShadersForChanges() {
+	for _, shaderInfo := range loadedShaders {
+		file, err := os.Stat(shaderInfo.path)
+
+		if err != nil {
+			panic(err)
+		}
+
+		modTime := file.ModTime()
+
+		if !modTime.Equal(shaderInfo.modified) {
+			fmt.Println("Shader modified")
+		}
+	}
+}
+
 //LoadShader ...
-func LoadShader(path string, shaderType uint32) ShaderID {
+func LoadShader(path string, shaderType uint32) (ShaderID, error) {
 	shaderFile, err := ioutil.ReadFile(path)
 
 	if err != nil {
@@ -31,11 +59,26 @@ func LoadShader(path string, shaderType uint32) ShaderID {
 	}
 
 	shaderFileStr := string(shaderFile)
-	return CreateShader(shaderFileStr, shaderType)
+	shaderID, err := CreateShader(shaderFileStr, shaderType)
+
+	if err != nil {
+		return 0, err
+	}
+
+	file, err := os.Stat(path)
+
+	if err != nil {
+		panic(err)
+	}
+
+	modTime := file.ModTime()
+	loadedShaders = append(loadedShaders, shaderInfo{path, modTime})
+
+	return shaderID, nil
 }
 
 //CreateShader ...
-func CreateShader(shaderSource string, shaderType uint32) ShaderID {
+func CreateShader(shaderSource string, shaderType uint32) (ShaderID, error) {
 	shaderID := gl.CreateShader(shaderType)
 	shaderSource = shaderSource + "\x00"
 	csource, free := gl.Strs(shaderSource)
@@ -52,15 +95,23 @@ func CreateShader(shaderSource string, shaderType uint32) ShaderID {
 		gl.GetShaderiv(shaderID, gl.INFO_LOG_LENGTH, &logLength)
 		log := strings.Repeat("\x00", int(logLength+1))
 		gl.GetShaderInfoLog(shaderID, logLength, nil, gl.Str(log))
-		panic("Failed to compile shader: \n" + log)
+		//fmt.Printf("Failed to compile shader: %s\n", log)
+		return 0, errors.New("Failed to compile shader: " + log)
 	}
-	return ShaderID(shaderID)
+	return ShaderID(shaderID), nil
 }
 
 //CreateProgram ...
-func CreateProgram(vertPath string, fragPath string) ProgramID {
-	vert := LoadShader(vertPath, gl.VERTEX_SHADER)
-	frag := LoadShader(fragPath, gl.FRAGMENT_SHADER)
+func CreateProgram(vertPath string, fragPath string) (ProgramID, error) {
+	vert, err := LoadShader(vertPath, gl.VERTEX_SHADER)
+	if err != nil {
+		return 0, err
+	}
+
+	frag, err := LoadShader(fragPath, gl.FRAGMENT_SHADER)
+	if err != nil {
+		return 0, err
+	}
 
 	shaderProgram := gl.CreateProgram()
 	gl.AttachShader(shaderProgram, uint32(vert))
@@ -75,12 +126,12 @@ func CreateProgram(vertPath string, fragPath string) ProgramID {
 		gl.GetProgramiv(shaderProgram, gl.INFO_LOG_LENGTH, &logLength)
 		log := strings.Repeat("\x00", int(logLength+1))
 		gl.GetProgramInfoLog(shaderProgram, logLength, nil, gl.Str(log))
-		panic("Failed to link program: \n" + log)
+		return 0, errors.New("Failed to link program: \n" + log)
 	}
 	gl.DeleteShader(uint32(vert))
 	gl.DeleteShader(uint32(frag))
 
-	return ProgramID(shaderProgram)
+	return ProgramID(shaderProgram), nil
 }
 
 //GenBindBuffer ...
@@ -117,9 +168,4 @@ func UnbindVertexArray() {
 //UseProgram ...
 func UseProgram(programID ProgramID) {
 	gl.UseProgram(uint32(programID))
-}
-
-//SayHello ...
-func SayHello() string {
-	return "Hello Wordl!"
 }
