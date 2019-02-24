@@ -118,3 +118,8 @@ func UnbindVertexArray() {
 func UseProgram(programID ProgramID) {
 	gl.UseProgram(uint32(programID))
 }
+
+//SayHello ...
+func SayHello() string {
+	return "Hello Wordl!"
+}
