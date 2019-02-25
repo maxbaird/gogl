@@ -24,12 +24,12 @@ func NewShader(vertexPath string, fragmentPath string) (*Shader, error) {
 		return nil, err
 	}
 
-	vertexModTime, err := getModifiedTime(shader.vertexPath)
+	vertexModTime, err := getModifiedTime(vertexPath)
 	if err != nil {
 		return nil, err
 	}
 
-	fragmentModTime, err := getModifiedTime(shader.fragmentPath)
+	fragmentModTime, err := getModifiedTime(fragmentPath)
 	if err != nil {
 		return nil, err
 	}
