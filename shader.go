@@ -16,8 +16,6 @@ type Shader struct {
 	fragmentModified time.Time
 }
 
-var loadedShaders = make(map[ProgramID]*Shader)
-
 //NewShader ...
 func NewShader(vertexPath string, fragmentPath string) (*Shader, error) {
 	id, err := CreateProgram(vertexPath, fragmentPath)
@@ -26,11 +24,19 @@ func NewShader(vertexPath string, fragmentPath string) (*Shader, error) {
 		return nil, err
 	}
 
-	return &Shader{id,
+	result := &Shader{id,
 		vertexPath,
 		fragmentPath,
 		getModifiedTime(vertexPath),
-		getModifiedTime(fragmentPath)}, nil
+		getModifiedTime(fragmentPath)}
+
+	return result, nil
+
+}
+
+//Use ...
+func (shader *Shader) Use() {
+	UseProgram(shader.id)
 }
 
 func getModifiedTime(filePath string) time.Time {
@@ -44,20 +50,18 @@ func getModifiedTime(filePath string) time.Time {
 }
 
 //CheckShadersForChanges ...
-func CheckShadersForChanges() {
-	for _, shader := range loadedShaders {
+func (shader *Shader) CheckShadersForChanges() {
 
-		vertexModTime := getModifiedTime(shader.vertexPath)
-		fragmentModTime := getModifiedTime(shader.fragmentPath)
+	vertexModTime := getModifiedTime(shader.vertexPath)
+	fragmentModTime := getModifiedTime(shader.fragmentPath)
 
-		if !vertexModTime.Equal(shader.vertexModified) || !fragmentModTime.Equal(shader.fragmentModified) {
-			id, err := CreateProgram(shader.vertexPath, shader.fragmentPath)
-			if err != nil {
-				fmt.Println(err)
-			} else {
-				gl.DeleteProgram(uint32(shader.id))
-				shader.id = id
-			}
+	if !vertexModTime.Equal(shader.vertexModified) || !fragmentModTime.Equal(shader.fragmentModified) {
+		id, err := CreateProgram(shader.vertexPath, shader.fragmentPath)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			gl.DeleteProgram(uint32(shader.id))
+			shader.id = id
 		}
 	}
 }
