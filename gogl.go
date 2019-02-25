@@ -12,10 +12,8 @@ type (
 	ShaderID uint32
 	//ProgramID ...
 	ProgramID uint32
-	//VAOID ...
-	VAOID uint32
-	//VBOID ...
-	VBOID uint32
+	//BufferID ...
+	BufferID uint32
 )
 
 //GetVersion ...
@@ -94,44 +92,37 @@ func CreateProgram(vertPath string, fragPath string) (ProgramID, error) {
 	gl.DeleteShader(uint32(vert))
 	gl.DeleteShader(uint32(frag))
 
-	//TODO finish hotloading shaders
-	/*
-		file, err := os.Stat(path)
-
-		if err != nil {
-			panic(err)
-		}
-
-		modTime := file.ModTime()
-		loadedShaders = append(loadedShaders, shaderInfo{path, modTime})
-	*/
-
 	return ProgramID(shaderProgram), nil
 }
 
 //GenBindBuffer ...
-func GenBindBuffer(target uint32) VBOID {
-	var VBO uint32
-	gl.GenBuffers(1, &VBO)
-	gl.BindBuffer(target, VBO)
-	return VBOID(VBO)
+func GenBindBuffer(target uint32) BufferID {
+	var buffer uint32
+	gl.GenBuffers(1, &buffer)
+	gl.BindBuffer(target, buffer)
+	return BufferID(buffer)
 }
 
 //GenBindVertexArray ...
-func GenBindVertexArray() VAOID {
+func GenBindVertexArray() BufferID {
 	var VAO uint32
 	gl.GenVertexArrays(1, &VAO)
 	gl.BindVertexArray(VAO)
-	return VAOID(VAO)
+	return BufferID(VAO)
 }
 
 //BindVertexArray ...
-func BindVertexArray(vaoID VAOID) {
+func BindVertexArray(vaoID BufferID) {
 	gl.BindVertexArray(uint32(vaoID))
 }
 
 //BufferDataFloat ...
 func BufferDataFloat(target uint32, data []float32, usage uint32) {
+	gl.BufferData(target, len(data)*4, gl.Ptr(data), usage)
+}
+
+//BufferDataInt ...
+func BufferDataInt(target uint32, data []uint32, usage uint32) {
 	gl.BufferData(target, len(data)*4, gl.Ptr(data), usage)
 }
 
