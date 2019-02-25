@@ -20,7 +20,7 @@ var loadedShaders = make(map[ProgramID]*Shader)
 
 //NewShader ...
 func NewShader(vertexPath string, fragmentPath string) (*Shader, error) {
-	id, err := createProgram(vertexPath, fragmentPath)
+	id, err := CreateProgram(vertexPath, fragmentPath)
 
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func NewShader(vertexPath string, fragmentPath string) (*Shader, error) {
 		getModifiedTime(fragmentPath)}, nil
 }
 
-func getModifiedTime(filePath string) {
+func getModifiedTime(filePath string) time.Time {
 	file, err := os.Stat(filePath)
 
 	if err != nil {
