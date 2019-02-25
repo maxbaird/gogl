@@ -49,8 +49,8 @@ func getModifiedTime(filePath string) time.Time {
 	return file.ModTime()
 }
 
-//CheckShadersForChanges ...
-func (shader *Shader) CheckShadersForChanges() {
+//CheckShaderForChanges ...
+func (shader *Shader) CheckShaderForChanges() {
 
 	vertexModTime := getModifiedTime(shader.vertexPath)
 	fragmentModTime := getModifiedTime(shader.fragmentPath)
