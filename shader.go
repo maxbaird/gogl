@@ -51,7 +51,7 @@ func CheckShadersForChanges() {
 		fragmentModTime := getModifiedTime(shader.fragmentPath)
 
 		if !vertexModTime.Equal(shader.vertexModified) || !fragmentModTime.Equal(shader.fragmentModified) {
-			id, err := createProgram(shader.vertexPath, shader.fragmentPath)
+			id, err := CreateProgram(shader.vertexPath, shader.fragmentPath)
 			if err != nil {
 				fmt.Println(err)
 			} else {
