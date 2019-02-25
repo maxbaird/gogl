@@ -2,12 +2,9 @@ package gogl
 
 import (
 	"errors"
-	//"fmt"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"io/ioutil"
-	//"os"
 	"strings"
-	"time"
 )
 
 type (
@@ -21,36 +18,9 @@ type (
 	VBOID uint32
 )
 
-type programInfo struct {
-	vertPath string
-	fragPath string
-	modified time.Time
-}
-
 //GetVersion ...
 func GetVersion() string {
 	return gl.GoStr(gl.GetString(gl.VERSION))
-}
-
-var loadedShaders []programInfo
-
-//CheckShadersForChanges ...
-func CheckShadersForChanges() {
-	/*
-		for _, shaderInfo := range loadedShaders {
-			file, err := os.Stat(shaderInfo.path)
-
-			if err != nil {
-				panic(err)
-			}
-
-			modTime := file.ModTime()
-
-			if !modTime.Equal(shaderInfo.modified) {
-				fmt.Println("Shader modified")
-			}
-		}
-	*/
 }
 
 //LoadShader ...
