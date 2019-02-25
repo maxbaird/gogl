@@ -24,11 +24,21 @@ func NewShader(vertexPath string, fragmentPath string) (*Shader, error) {
 		return nil, err
 	}
 
+	vertexModTime, err := getModifiedTime(shader.vertexPath)
+	if err != nil {
+		return nil, err
+	}
+
+	fragmentModTime, err := getModifiedTime(shader.fragmentPath)
+	if err != nil {
+		return nil, err
+	}
+
 	result := &Shader{id,
 		vertexPath,
 		fragmentPath,
-		getModifiedTime(vertexPath),
-		getModifiedTime(fragmentPath)}
+		vertexModTime,
+		fragmentModTime}
 
 	return result, nil
 
@@ -39,21 +49,28 @@ func (shader *Shader) Use() {
 	UseProgram(shader.id)
 }
 
-func getModifiedTime(filePath string) time.Time {
+func getModifiedTime(filePath string) (time.Time, error) {
 	file, err := os.Stat(filePath)
 
 	if err != nil {
-		panic(err)
+		return time.Time{}, err
 	}
 
-	return file.ModTime()
+	return file.ModTime(), nil
 }
 
 //CheckShaderForChanges ...
-func (shader *Shader) CheckShaderForChanges() {
+func (shader *Shader) CheckShaderForChanges() error {
 
-	vertexModTime := getModifiedTime(shader.vertexPath)
-	fragmentModTime := getModifiedTime(shader.fragmentPath)
+	vertexModTime, err := getModifiedTime(shader.vertexPath)
+	if err != nil {
+		return err
+	}
+
+	fragmentModTime, err := getModifiedTime(shader.fragmentPath)
+	if err != nil {
+		return err
+	}
 
 	if !vertexModTime.Equal(shader.vertexModified) || !fragmentModTime.Equal(shader.fragmentModified) {
 		id, err := CreateProgram(shader.vertexPath, shader.fragmentPath)
@@ -64,4 +81,5 @@ func (shader *Shader) CheckShaderForChanges() {
 			shader.id = id
 		}
 	}
+	return nil
 }
